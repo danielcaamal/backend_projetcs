@@ -6,6 +6,7 @@ from uuid import UUID
 # Pydantic
 from pydantic import BaseModel, EmailStr, Field
 
+
 class UserBase(BaseModel):
     '''
     Model UserBase to simulate at Twitter's User, this not contain the password
@@ -27,18 +28,18 @@ class UserBase(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "user_id"       : '12346-a2ff4hgh-123040-2cds2x',
+                "user_id"       : "a8098c1a-f86e-11da-bd1a-00112444be1e",
                 "email"         : "danielcaamal@email.com",
                 "first_name"    : "Daniel",
                 "last_name"     : "Caamal",
+                "birth_date"     : date(2000,1,1)
             }
         }
 
-
-class UserLogin(UserBase):
+class UserPasswordMixin():
     '''
-    Model User Login to simulate at Twitter's User, this inherit BaseUser and needs a password 
-    to be completed,  this only must implemented for request bodies
+    Model UserPasswordMixin allows to implement when to use password as request and avoid return it
+    int the response
     '''
     password: str = Field(
         ...,
@@ -46,6 +47,19 @@ class UserLogin(UserBase):
         max_length=64,
         example='a1s2s3242ch5678'
     )
+
+
+class UserLogin(UserBase, UserPasswordMixin):
+    '''
+    Model User Login to simulate at Twitter's User, this inherit BaseUser and needs a password 
+    to be completed,  this only must implemented for request bodies and only for login
+    '''
+    
+class UserRegister(UserBase, UserPasswordMixin):
+    '''
+    Model User Register to simulate at Twitter's User, this inherit BaseUser and needs a password 
+    to be completed,  this only must implemented for request bodies and only for register a User
+    '''
 
 class User(UserBase):
     '''

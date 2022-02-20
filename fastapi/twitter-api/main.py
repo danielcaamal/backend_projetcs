@@ -1,15 +1,17 @@
 # Python
+import simplejson as json
 
 # Pydantic
 
 # FastAPI
 from typing import List
-from fastapi import FastAPI, status
+from fastapi import Body, FastAPI, status, HTTPException
+from fastapi.logger import logger
 from config import custom_openapi
 
 # My imports
 from models.Tweet import Tweet
-from models.User import User
+from models.User import User, UserLogin, UserRegister
 
 
 app = FastAPI()
@@ -22,18 +24,51 @@ app = FastAPI()
 ### Create a User
 @app.post(
     path='/users/signup',
-    response_model=User,
+    response_model=UserRegister,
     status_code=status.HTTP_201_CREATED,
     summary='Register a User',
     tags=['Users']
 )
-def signup():
-    pass
+def signup(
+    user: UserRegister = Body(...)
+):
+    '''
+    Signup
+    
+    This path operation register a new user in the app
+    
+    Parameters:
+        - Request body parameter
+            - user: UserRegister
+            
+    Returns a json with basic information (Model User):
+        - user_id: UUID
+        - email: EmailStr
+        - first_name: str
+        - last_name: str
+        - birth_date: date
+    '''
+    with open('users.json', 'r+', encoding='utf-8') as file:
+        users = json.loads(file.read())
+        new_user = user.dict()
+        
+        # Serialization
+        new_user['user_id'] = str(new_user['user_id'])        
+        new_user['birth_date'] = str(new_user['birth_date'])
+        
+        # Validations
+        if new_user['user_id'] in [ key['user_id'] for key in users ]:
+            raise HTTPException(status.HTTP_409_CONFLICT,detail={'message': 'user already exists'})
+        
+        users.append(new_user)
+        file.seek(0)
+        file.write(json.dumps(users))
+        return new_user
 
 ### Login User
 @app.post(
     path='/users/login',
-    response_model=User,
+    response_model=UserLogin,
     status_code=status.HTTP_200_OK,
     summary='Login a User',
     tags=['Users']
