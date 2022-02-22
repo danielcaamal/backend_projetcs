@@ -1,12 +1,12 @@
 # FastAPI
 from fastapi import FastAPI
-from config import custom_openapi
+from config.openapi import custom_openapi
 
 # My imports
 from routes.users import router as user_router
 from routes.tweets import router as tweet_router
 
-# Initialize
+# Initialize app
 app = FastAPI()
 
 # Includes

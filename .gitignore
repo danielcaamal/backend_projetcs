@@ -374,3 +374,6 @@ archive.zip
 # vim temporary files
 *~
 .*.sw?
+
+# Docker files
+postgres-data

@@ -1,4 +1,5 @@
-import uvicorn  # type: ignore
+import uvicorn
+# from config.settings import PORT, DEBUG
 
 if __name__ == "__main__":
     uvicorn.run(

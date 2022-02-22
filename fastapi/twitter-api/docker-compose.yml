@@ -1,0 +1,40 @@
+version: '3.4'
+
+# volumes:
+#   mysql: {}
+
+services:
+  postgres:
+    image: postgres:latest
+    # build:
+    #   context: .
+    #   dockerfile: database/dockerfile
+    container_name: pgsql
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - APP_DB_USER=daniel
+      - APP_DB_PASS=caamal
+      - APP_DB_NAME=fastapi_twitter
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./database/db.sql:/docker-entrypoint-initdb.d/db.sql
+
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/dockerfile
+  #   restart: on-failure
+  #   tty: true
+  #   stdin_open: true
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - 8000:8000
+  #   volumes:
+  #     - .:/usr/src/app
+  #   depends_on:
+  #     - postgres

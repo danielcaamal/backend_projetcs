@@ -4,6 +4,7 @@ import simplejson as json
 # FastAPI
 from typing import List
 from fastapi import APIRouter, Body, status, HTTPException, Path
+from database.Connection import PoolCursor
 
 # My imports
 from models.Tweet import *
@@ -42,8 +43,22 @@ def home():
             - last_name: str
             - birth_date: date
     '''
-    with open('tweets.json', 'r+', encoding='utf-8') as file:
-        return json.loads(file.read())
+    with PoolCursor() as cursor:
+        
+        # Execute
+        query = "SELECT t.id as tweet_id,* FROM tweets t INNER JOIN users u ON u.id=t.user_id"
+        cursor.execute(query)
+        
+        tweets = []
+        # Serialize result
+        for res in cursor.fetchall():
+            user = User.from_dict(res)
+            tweet = Tweet.from_dict(res)
+            tweet['by'] = user
+            tweets.append(tweet)
+        print(tweets)
+        return tweets
+
 
 ### Create a Tweet
 @router.post(
@@ -54,7 +69,7 @@ def home():
     tags=['Tweets']
 )
 def post_tweet(
-    tweet: Tweet = Body(...)
+    tweet: Tweet = Body(...),
 ):
     '''
     Post tweet
@@ -76,29 +91,30 @@ def post_tweet(
             - last_name: str
             - birth_date: date
     '''
-    with open('tweets.json', 'r+', encoding='utf-8') as file:
-        tweets = json.loads(file.read())
-        new_tweet = tweet.dict()
+    with PoolCursor() as cursor:
+        try:
+            new_tweet = tweet.dict()
+            
+            if not new_tweet.get('updated_at', False): new_tweet['updated_at'] = None
+            
+            user_id = new_tweet['by']['user_id']
+            new_tweet['user_id'] = user_id
+            query = """
+                INSERT INTO tweets (id, content, created_at, updated_at, user_id) 
+                VALUES ('{tweet_id}', '{content}', '{created_at}', '{updated_at}', '{user_id}');
+            """.format(**new_tweet)
+            cursor.execute(query)
+            
+            if cursor.rowcount > 0:
+                query = "SELECT * FROM users WHERE id = '{}';".format(user_id)
+                cursor.execute(query)
+                new_tweet['by'] = User.from_dict(cursor.fetchone())
+                print(new_tweet)
+                return new_tweet
         
-        # Serialization Tweet
-        new_tweet['tweet_id'] = str(new_tweet['tweet_id'])       
-        new_tweet['created_at'] = str(new_tweet['created_at'])
-        if new_tweet.get('updated_at', False):
-            new_tweet['updated_at'] = str(new_tweet['updated_at'])
+        except Exception as err:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={'msg':f'{err}'})
         
-        # Serialization User
-        new_tweet['by']['user_id'] = str(new_tweet['by']['user_id'])
-        new_tweet['by']['birth_date'] = str(new_tweet['by']['birth_date'])
-        
-        
-        # Validations
-        if new_tweet['tweet_id'] in [ key['tweet_id'] for key in tweets ]:
-            raise HTTPException(status.HTTP_409_CONFLICT,detail={'msg': 'tweet not allowed'})
-        
-        tweets.append(new_tweet)
-        file.seek(0)
-        file.write(json.dumps(tweets))
-        return new_tweet
 
 ### Show a Tweet
 @router.get(
@@ -108,8 +124,24 @@ def post_tweet(
     summary='Show a Tweet',
     tags=['Tweets']
 )
-def show_tweet():
-    pass
+def show_tweet(
+    tweet_id: str = Path(...),
+):
+    # Execute
+    with PoolCursor() as cursor:
+        query = "SELECT u.id as user_id, t.id as tweet_id, * FROM tweets t INNER JOIN users u ON u.id=t.user_id WHERE t.id = '{}'".format(tweet_id)
+        print(query)
+        cursor.execute(query)
+        
+        tweets = []
+        # Serialize result
+        res = cursor.fetchone()
+        print(res)
+        user = User.from_dict(res)
+        tweet = Tweet.from_dict(res)
+        tweet['by'] = user
+        print(tweet)
+        return tweet
 
 ### Delete a Tweet
 @router.put(
@@ -119,16 +151,57 @@ def show_tweet():
     summary='Update a Tweet',
     tags=['Tweets']
 )
-def delete_tweet():
-    pass
+def update_tweet(
+    tweet_id: str = Path(...),
+    tweet: Tweet = Body(...),
+):
+    with PoolCursor() as cursor:
+        update_tweet = tweet.dict()
+        # Execute
+        query = "SELECT * FROM tweets WHERE id = '{}';".format(tweet_id)
+        cursor.execute(query)
+        
+        # If the cursor returns something then we raise an error (user repeated)
+        if cursor.rowcount <= 0:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={'msg':'Tweet not exists'})
+        
+        update_tweet['user_id'] = update_tweet['by']['user_id']
+        query = """
+            UPDATE tweets 
+            SET content='{content}', updated_at='{updated_at}', created_at='{created_at}', user_id='{user_id}' 
+            WHERE id = {tweet_id}
+        """.format(**update_tweet)
+        cursor.execute(query)
+        
+        if cursor.rowcount > 0:
+            return update_tweet
+        
+        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail={'msg':'Something wrong happened'})
 
 ### Delete a Tweet
 @router.delete(
     path='/{tweet_id}',
-    response_model=Tweet,
     status_code=status.HTTP_200_OK,
     summary='Delete a Tweet',
     tags=['Tweets']
 )
-def delete_tweet():
-    pass
+def delete_tweet(
+    tweet_id: str = Path(...),
+):
+    # Execute
+    with PoolCursor() as cursor:
+    
+        query = "SELECT * FROM tweets WHERE id = '{}';".format(tweet_id)
+        cursor.execute(query)
+        
+        # If the cursor returns something then we raise an error (user repeated)
+        if cursor.rowcount <= 0:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={'msg':'Tweet not exists'})
+        
+        query = "DELETE FROM tweets WHERE id = '{}';".format(tweet_id)
+        cursor.execute(query)
+        
+        if cursor.rowcount > 0:
+            return {'msg':'Delete successfully'}
+        
+        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail={'msg':'Something wrong happened'})
