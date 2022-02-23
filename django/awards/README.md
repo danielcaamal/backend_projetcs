@@ -13,3 +13,9 @@ Notes:
 - Change the permission (if apply)
 > - $ sudo chown -R $USER:$USER .
 
+- If there is not way, first try:
+> - docker-compose down --volumes 
+
+- If not:
+> - docker system prune -a --volumes
+

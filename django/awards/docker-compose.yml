@@ -17,8 +17,8 @@ services:
       - '5438:5432'
     volumes:
       - ./postgres-data:/var/lib/postfgresql/data
-      # Create tables if not exists
-      # - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      # Create tables or databases if not exists
+      # - ./db:/docker-entrypoint-initdb.d/
 
   web:
     build: .
@@ -26,9 +26,17 @@ services:
     container_name: django-awards-web
     volumes:
       - .:/code
-    ports:
-      - "8000:8000"
+    expose:
+      - 8000
     env_file:
       - ./.env.dev
     depends_on:
       - db
+
+  nginx:
+    build: ./nginx
+    container_name: django-awards-nginx
+    ports:
+      - 1337:80
+    depends_on:
+      - web
