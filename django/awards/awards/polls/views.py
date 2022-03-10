@@ -1,8 +1,12 @@
+# Django
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.urls import reverse
-from .models import Question, Choice
+from django.utils import timezone
 from django.views.generic import  ListView, DetailView
+
+# Local
+from .models import Question, Choice
 
 
 # Class Base Views
@@ -11,18 +15,22 @@ class IndexView(ListView):
     context_object_name = 'latest_question_list'
     def get_queryset(self):
         '''Return last five published questions'''
-        return Question.objects.order_by('-pub_date')[:5]
+        return Question.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')[:5]
 
 class DetailView(DetailView):
     model = Question
     template_name = 'polls/detail.html'
+    def get_queryset(self):
+        '''Excludes any questions that aren't published yet'''
+        return Question.objects.filter(pub_date__lte=timezone.now())
+
 
 class ResultView(DetailView):
     model = Question
     template_name = 'polls/results.html'
 
-# Class Base Functions
 
+# Class Base Functions
 # def index(request):
 #     context = {}
 #     context['latest_question_list'] = Question.objects.all()
