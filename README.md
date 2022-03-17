@@ -13,3 +13,5 @@ Using Python:
 - ### Flask
     - **Flask Fundamentals:** Basic testing, and project CRUD to simulate TODO list.
 - ### Django
+    - **Django Awards** Basic and intermedian Django (Testing, Static Files, Django Admin) [link](./django/awards/awards/manage.py)
+![image](./django/awards/awards/awards.png)
