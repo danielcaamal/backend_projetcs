@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 # Local imports
 from watchlist_app.models import Review, Watchlist, StreamPlatform
-from watchlist_app.api.permissions import AdminOrReadOnly
+from watchlist_app.api.permissions import IsAdminOrReadOnly, IsReviewUserOrReadOnly
 from watchlist_app.api.serializers import ReviewSerializer, StreamPlatformSerializer, WatchlistSerializer
 
 
@@ -18,6 +18,7 @@ from watchlist_app.api.serializers import ReviewSerializer, StreamPlatformSerial
 # Class based view
 # Watchlist
 class WatchlistView(APIView):
+    permission_classes = (IsAdminOrReadOnly,)
     
     def get(self, request):
         watchlists = Watchlist.objects.all()
@@ -33,6 +34,8 @@ class WatchlistView(APIView):
 
 
 class WatchlistDetailView(APIView):
+    permission_classes = (IsAuthenticated, IsAdminOrReadOnly)
+    
     def get(self, request, pk):
         watchlist = get_object_or_404(Watchlist, pk=pk)
         serializer = WatchlistSerializer(watchlist)
@@ -54,6 +57,7 @@ class WatchlistDetailView(APIView):
 # Generics Views
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    permission_classes = (IsAuthenticated,)
     
     def get_queryset(self):
         return Review.objects.all()
@@ -87,9 +91,10 @@ class ReviewList(generics.ListAPIView):
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    permission_classes = (IsReviewUserOrReadOnly,)
 
 
 class StreamPlatformVS(viewsets.ModelViewSet):
     queryset = StreamPlatform.objects.all()
     serializer_class = StreamPlatformSerializer
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrReadOnly,)
