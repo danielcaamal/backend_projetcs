@@ -13,8 +13,8 @@ router.register('stream', StreamPlatformVS, basename='streamplatform')
 
 urlpatterns = [
     # Watch routes
-    path('watch/', WatchlistView.as_view(), name='watchlist'),
-    path('watch/<int:pk>/', WatchlistDetailView.as_view(), name='watchlist-details'),
+    path('list/', WatchlistView.as_view(), name='watchlist'),
+    path('<int:pk>/', WatchlistDetailView.as_view(), name='watchlist-details'),
     path('review/<int:pk>/', ReviewDetail.as_view(), name='review-details'),
     path('<int:pk>/reviews/', ReviewList.as_view(), name='review'),
     path('<int:pk>/review-create/', ReviewCreate.as_view(), name='review-create'),

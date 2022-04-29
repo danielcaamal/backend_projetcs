@@ -31,10 +31,12 @@ ALLOWED_HOSTS = []
 # Application definition
 LOCAL_APPS = [
     'watchlist_app',
+    'user_app'
 ]
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 DJANGO_APPS = [
@@ -131,9 +133,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PERMISSION_CLASSES':  [
-#         'rest_framework.permissions.IsAuthenticated',
-#     ],
-    
-# }
+REST_FRAMEWORK = {
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+    ]
+}
