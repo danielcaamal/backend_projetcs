@@ -2,12 +2,15 @@
 from django.shortcuts import get_object_or_404
 
 # Django REST Framework
-from rest_framework import generics, status, viewsets
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response  import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
 from rest_framework.views import APIView
+
+# Django Filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 # Local imports
 from watchlist_app.models import Review, Watchlist, StreamPlatform
@@ -18,6 +21,15 @@ from watchlist_app.api.throttling import ReviewCreateThrottle, ReviewListThrottl
 
 # Class based view
 # Watchlist
+
+class WatchlistFilterView(generics.ListAPIView):
+    queryset = Watchlist.objects.all()
+    serializer_class = WatchlistSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields  = ['title', '=platform__name']
+    ordering_fields = ['average_rating',]
+    
+
 class WatchlistView(APIView):
     permission_classes = (IsAdminOrReadOnly,)
     
@@ -97,6 +109,21 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsReviewUserOrReadOnly,)
     throttle_classes = (ScopedRateThrottle,)
     throttle_scope = 'review-detail'
+    
+class UserReviewList(generics.ListAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['review_user__username', 'active']
+    
+    # def get_queryset(self):
+    #     username = self.kwargs['username']
+    #     return Review.objects.filter(review_user__username=username)
+    
+    # def get_queryset(self):
+    #     username = self.request.query_params.get('username', None)
+    #     return Review.objects.filter(review_user__username=username)
+    
 
 
 class StreamPlatformVS(viewsets.ModelViewSet):
