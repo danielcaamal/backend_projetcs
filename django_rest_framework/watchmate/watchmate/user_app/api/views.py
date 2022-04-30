@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 # Django REST Framework Simple JWT
-from rest_framework_simplejwt.tokens import RefreshToken
+# from rest_framework_simplejwt.tokens import RefreshToken
 
 # Local imports 
 from user_app.api.serializers import RegistrationSerializer
@@ -27,9 +27,9 @@ def registration_view(request):
         
         response_data = { **serializer.data, "token": token, "message": "User registered successfully" }
         
-        refresh = RefreshToken.for_user(user)
+        # refresh = RefreshToken.for_user(user)
         
-        response_data.update({"refresh": str(refresh), "access": str(refresh.access_token)})
+        # response_data.update({"refresh": str(refresh), "access": str(refresh.access_token)})
         
         
         return Response(response_data)
