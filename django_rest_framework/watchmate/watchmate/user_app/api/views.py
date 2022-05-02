@@ -3,6 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 
 # Django REST Framework
+from rest_framework import status
 from rest_framework.authtoken.models import  Token
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -32,7 +33,7 @@ def registration_view(request):
         # response_data.update({"refresh": str(refresh), "access": str(refresh.access_token)})
         
         
-        return Response(response_data)
+        return Response(response_data, status=status.HTTP_201_CREATED)
     
 
 
