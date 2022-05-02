@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 # Django Filters
 from django_filters.rest_framework import DjangoFilterBackend
+from watchlist_app.api.pagination import WatchlistFilterPagination
 
 # Local imports
 from watchlist_app.models import Review, Watchlist, StreamPlatform
@@ -26,6 +27,7 @@ class WatchlistFilterView(generics.ListAPIView):
     queryset = Watchlist.objects.all()
     serializer_class = WatchlistSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    pagination_class = WatchlistFilterPagination
     search_fields  = ['title', '=platform__name']
     ordering_fields = ['average_rating',]
     
