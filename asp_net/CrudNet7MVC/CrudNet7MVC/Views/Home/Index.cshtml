@@ -1,8 +1,67 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<CrudNet7MVC.Models.Contact>
+@{
+    ViewData["Title"] = "Contact List";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1 class="text-center">Contact with .NET 7 (.NET Core MVC)</h1>
+<div class="row">
+    <div class="offset-9 col-3 mb-3">
+        <a asp-action="Create" asp-asp-controller="Home" class="btn btn-secondary d-block mx-auto btn-lg">
+            New User
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="offset-12">
+        <div class="card border">
+            <div class="card-header bg-dark">
+                <h3 class="text-white">
+                    <strong>Users list</strong>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    @if(Model.Count() > 0)
+                    {
+                        <table class="table table-bordered" id="tblUsers" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>@Html.DisplayNameFor(m => m.Id)</th>
+                                    <th>@Html.DisplayNameFor(m => m.Name)</th>
+                                    <th>@Html.DisplayNameFor(m => m.Phone)</th>
+                                    <th>@Html.DisplayNameFor(m => m.CellPhone)</th>
+                                    <th>@Html.DisplayNameFor(m => m.Email)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@Html.DisplayFor(m => item.Id)</td>
+                                        <td>@Html.DisplayFor(m => item.Name)</td>
+                                        <td>@Html.DisplayFor(m => item.Phone)</td>
+                                        <td>@Html.DisplayFor(m => item.CellPhone)</td>
+                                        <td>@Html.DisplayFor(m => item.Email)</td>
+                                        <td>
+                                            <a asp-action="Edit" asp-controller="Home" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Edit</a>
+                                            <a asp-action="Details" asp-controller="Home" asp-route-id="@item.Id" class="btn btn-info btn-sm">Details</a>
+                                            <a asp-action="Delete" asp-controller="Home" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Delete</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <h4 class="text-center">No records found</h4>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
